@@ -1,0 +1,342 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Брейн‑ринг: Животные джунглей</title>
+  <style>
+    /* ====== Яркая детская палитра и базовая типографика ====== */
+    :root{
+      --bg-1: #E0FFF4; /* мягкий зелёный */
+      --bg-2: #FFF8E6; /* мягкий жёлтый */
+      --card: #FFFFFF;
+      --accent: #00A86B; /* тропический зелёный */
+      --accent-2: #FFD166; /* яркий желтый */
+      --accent-3: #FF6B6B; /* коралловый для ошибок */
+      --text:#12342b;
+      --muted:#53626a;
+      --glass: rgba(255,255,255,0.6);
+      --shadow: 0 12px 30px rgba(12,40,30,0.12);
+      font-family: system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;padding:20px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--bg-1),var(--bg-2));color:var(--text);
+      -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
+    }
+
+    /* ====== Карта приложения ====== */
+    .app{width:100%;max-width:1150px;border-radius:20px;overflow:hidden;display:grid;grid-template-columns:380px 1fr;gap:0;box-shadow:var(--shadow);}
+    @media (max-width:920px){.app{grid-template-columns:1fr}}
+
+    /* ====== Левая панель (настройки + счёт) ====== */
+    .panel{padding:20px;background:linear-gradient(180deg,#FFFFFF, #F7FFF9);display:flex;flex-direction:column;gap:16px}
+    .brand{display:flex;gap:12px;align-items:center}
+
+    /* встроенный SVG логотип */
+    .logo{width:68px;height:68px;border-radius:14px;background:linear-gradient(135deg,var(--accent),#4DD599);display:flex;align-items:center;justify-content:center;box-shadow:0 8px 24px rgba(0,168,107,0.18)}
+    .logo svg{width:44px;height:44px}
+
+    h1{font-size:20px;margin:0}
+    .subtitle{font-size:13px;color:var(--muted)}
+
+    .setup{background:linear-gradient(180deg,#fff,#fffe);padding:12px;border-radius:12px;border:1px solid rgba(10,40,30,0.04)}
+    label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
+
+    input[type=text], input[type=number]{width:100%;padding:10px;border-radius:10px;border:1px solid rgba(20,60,40,0.08);font-size:14px}
+    .teams{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+    .team-chip{background:linear-gradient(90deg,#fff,#f3fff7);padding:8px 10px;border-radius:10px;border:1px solid rgba(20,60,40,0.06);font-weight:700}
+
+    .controls-row{display:flex;gap:10px}
+    .btn{display:inline-flex;gap:8px;align-items:center;padding:10px 14px;border-radius:12px;border:none;background:linear-gradient(90deg,var(--accent),#4dd599);color:white;font-weight:800;cursor:pointer;box-shadow:0 8px 18px rgba(0,0,0,0.08);transition:transform .12s ease}
+    .btn:active{transform:translateY(2px)}
+    .btn.secondary{background:transparent;border:2px solid rgba(0,0,0,0.06);color:var(--accent);font-weight:700}
+
+    .scoreboard{display:flex;flex-direction:column;gap:10px;padding-top:8px}
+    .score-row{display:flex;justify-content:space-between;align-items:center;padding:10px;border-radius:12px;background:linear-gradient(180deg,#fff,#f7fff9);box-shadow:0 6px 18px rgba(12,40,30,0.04)}
+    .score-name{font-weight:800}
+    .score-bubble{background:linear-gradient(90deg,var(--accent-2),#FFBE4A);color:#2b2b2b;padding:6px 12px;border-radius:999px;font-weight:900}
+
+    .legend{font-size:12px;color:var(--muted)}
+
+    /* ====== Правая панель (игровая зона) ====== */
+    .play-area{padding:22px;display:flex;flex-direction:column;gap:14px;background:linear-gradient(180deg,#FBFFF8,#F1FFF6)}
+    .top-row{display:flex;justify-content:space-between;align-items:center}
+
+    .turn-indicator{font-weight:900;font-size:16px}
+
+    .question-card{background:linear-gradient(180deg,#fff,#FFFEF7);border-radius:16px;padding:20px;box-shadow:0 18px 40px rgba(12,40,30,0.06);min-height:230px;display:flex;flex-direction:column}
+
+    .q-head{display:flex;justify-content:space-between;align-items:center}
+    .q-level{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;font-weight:900}
+    .q-level.easy{background:linear-gradient(90deg,#DFF6EC,#E8FFF5);color:#0f8c58}
+    .q-level.medium{background:linear-gradient(90deg,#FFF4D6,#FFFCE8);color:#b97700}
+    .q-level.hard{background:linear-gradient(90deg,#FFEFF1,#FFF5F6);color:var(--accent-3)}
+
+    .q-text{font-size:20px;font-weight:900;margin-top:12px}
+    .answers{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+    @media (max-width:640px){.answers{grid-template-columns:1fr}}
+
+    .answer-btn{display:flex;align-items:center;gap:8px;padding:14px;border-radius:12px;border:2px solid rgba(20,60,40,0.06);background:linear-gradient(180deg,#fff,#fffdf7);cursor:pointer;font-weight:900;font-size:15px;transition:transform .12s ease,box-shadow .12s}
+    .answer-btn:hover{transform:translateY(-3px);box-shadow:0 8px 20px rgba(0,0,0,0.06)}
+    .answer-btn.disabled{opacity:0.6;pointer-events:none}
+
+    .feedback{height:28px;font-weight:900;margin-top:8px}
+    .feedback.good{color:var(--accent)}
+    .feedback.bad{color:var(--accent-3)}
+
+    .risk-pills{display:flex;gap:10px}
+    .risk-pill{display:inline-flex;gap:8px;align-items:center;padding:10px 12px;border-radius:12px;border:none;background:linear-gradient(90deg,#fff,#fff);cursor:pointer;font-weight:900;box-shadow:0 8px 20px rgba(0,0,0,0.04)}
+    .risk-pill:active{transform:translateY(2px)}
+
+    .footer{display:flex;justify-content:space-between;align-items:center;margin-top:auto}
+
+    /* Confetti (простая) */
+    .confetti-piece{position:absolute;width:8px;height:14px;border-radius:2px;opacity:0}
+
+    /* плавности */
+    .smooth{transition:all .2s ease}
+
+  </style>
+</head>
+<body>
+  <div class="app" role="application" aria-labelledby="title">
+    <!-- Левая панель -->
+    <section class="panel">
+      <div class="brand">
+        <div class="logo" aria-hidden="true">
+          <!-- SVG-иконка джунглей: лист + лапа -->
+          <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <rect width="64" height="64" rx="12" fill="url(#g)" />
+            <defs>
+              <linearGradient id="g" x1="0" x2="1"><stop offset="0" stop-color="#00A86B"/><stop offset="1" stop-color="#4DD599"/></linearGradient>
+            </defs>
+            <path d="M20 38c0-8 12-14 20-14" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+            <circle cx="42" cy="28" r="4" fill="#fff"/>
+            <path d="M28 44c2-4 8-6 12-4" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div>
+          <h1 id="title">Брейн‑ринг: Животные джунглей</h1>
+          <div class="subtitle">Возраст: 12–14 лет • 3 уровня • 15 вопросов</div>
+        </div>
+      </div>
+
+      <div class="setup" id="setup">
+        <label>Число команд (2–4)</label>
+        <input id="teamCount" type="number" min="2" max="4" value="2">
+
+        <label style="margin-top:10px">Имена команд (через Enter или нажать +)</label>
+        <div style="display:flex;gap:8px;margin-bottom:8px">
+          <input id="teamInput" type="text" placeholder="Например: Леопарды" />
+          <button class="btn secondary" id="addTeamBtn">+
+          </button>
+        </div>
+        <div class="teams" id="teamList" aria-live="polite"></div>
+
+        <div class="controls-row" style="margin-top:10px">
+          <button class="btn" id="startBtn">Начать игру</button>
+          <button class="btn secondary" id="resetBtn">Сброс</button>
+        </div>
+      </div>
+
+      <div>
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div class="legend">Текущий счёт</div>
+          <div class="muted">Правильный ответ — очки по риску</div>
+        </div>
+        <div class="scoreboard" id="scoreboard"></div>
+      </div>
+
+      <div style="margin-top:6px">
+        <div class="legend">Правила</div>
+        <ul style="padding-left:18px">
+          <li>3 уровня: Лёгкий (10), Средний (20), Сложный (30)</li>
+          <li>По очереди команды выбирают уровень и отвечают</li>
+          <li>Игра автономна — всё работает в этом файле</li>
+        </ul>
+      </div>
+
+      <div class="muted" style="margin-top:auto">Готово — обновлённый интерфейс: ярче, больше шрифты, встроенные SVG и анимация.</div>
+    </section>
+
+    <!-- Правая панель -->
+    <main class="play-area">
+      <div class="top-row">
+        <div class="turn-indicator" id="turnIndicator">Ожидание старта</div>
+        <div style="display:flex;gap:10px;align-items:center">
+          <div class="muted">Осталось: <strong id="remaining">15</strong></div>
+        </div>
+      </div>
+
+      <div class="question-card" id="questionCard" aria-live="polite">
+        <div class="q-head">
+          <div class="q-level" id="levelPill">Выберите уровень</div>
+          <div class="q-meta muted" id="meta">—</div>
+        </div>
+
+        <div class="q-text" id="questionText">Нажмите «Начать игру», чтобы начать.</div>
+
+        <div class="answers" id="answers"></div>
+
+        <div class="feedback" id="feedback"></div>
+
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px">
+          <div class="risk-pills">
+            <button class="risk-pill" data-risk="easy" id="pickEasy">🌿 Лёгкий (10)</button>
+            <button class="risk-pill" data-risk="medium" id="pickMedium">🔥 Средний (20)</button>
+            <button class="risk-pill" data-risk="hard" id="pickHard">🦁 Сложный (30)</button>
+          </div>
+          <div class="muted">Текущий ход: <strong id="currentTeam">—</strong></div>
+        </div>
+      </div>
+
+      <div class="footer">
+        <div class="muted" id="progress">Вопрос 0 из 15</div>
+        <div style="display:flex;gap:10px">
+          <button class="btn secondary" id="skipBtn">Пропустить</button>
+          <button class="btn" id="nextBtn" disabled>Следующий</button>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Конфетти-контейнер (динамически заполняется) -->
+  <div id="confettiRoot" style="position:fixed;left:0;top:0;right:0;bottom:0;pointer-events:none;overflow:visible"></div>
+
+<script>
+/* ==========================================================
+   Обновлённая логика (исправлены проблемы: старт теперь всегда
+   работает — если команды не заданы, автоматически создаются;
+   улучшены состояния кнопок и визуальные подсказки)
+   ========================================================== */
+
+const QUESTIONS = {
+  easy: [
+    {q: 'Какое животное обычно считается «царём джунглей» (но на самом деле живёт в саванне)?', opts: ['Тигр','Лев','Ягуар','Пума'], a:1, info:'Лев — чаще в саваннах Африки.'},
+    {q: 'Какая крупная кошка по окрасу часто полосатая?', opts: ['Бенгальский тигр','Леопард','Азиатский лев','Пума'], a:0, info:'Тигры имеют полосы.'},
+    {q: 'Какое из этих животных — насекомоядное?', opts: ['Капибара','Муравьед','Тапир','Макака'], a:1, info:'Муравьед питается в основном муравьями и термитами.'},
+    {q: 'Как называется труба у слона, которую он использует как нос?', opts: ['Хобот','Хвост','Клюв','Рыло'], a:0, info:'Хобот — удлинённый нос слона.'},
+    {q: 'Какой из этих животных умеет хорошо лазить по деревьям и часто живёт в джунглях?', opts: ['Обезьяна','Носорог','Крокодил','Антилопа'], a:0, info:'Обезьяны — отличные лазальщики.'}
+  ],
+  medium: [
+    {q: 'У ягуара и леопарда схожая внешность: как отличить ягуара?', opts:['Ягуар крупнее и с пятнами, у которых есть точки внутри','Ягуар полосатый','Ягуар меньше и без пятен','Ягуар имеет грижу'], a:0, info:'У ягуара розетки часто с точкой внутри.'},
+    {q: 'Что помогает хамелеону маскироваться?', opts:['Изменение цвета кожи','Шерсть','Крылья','Радужка глаза'], a:0, info:'Хамелеоны меняют цвет благодаря хроматофорам.'},
+    {q: 'Как называется самая большая обезьяна в джунглях Юго-Восточной Азии?', opts:['Орангутанг','Горилла','Шимпанзе','Гиббон'], a:0, info:'Орангутанги — крупнейшие древесные приматы.'},
+    {q: 'Какой ядовитый элемент встречается в коже некоторых тропических лягушек?', opts:['Алкалоиды','Белки','Сахар','Хлор'], a:0, info:'Токсичные алкалоиды защищают лягушек.'},
+    {q: 'Какую способность имеют летучие лисицы (летучие мыши) в джунглях?', opts:['Навигация по эхолокации','Лечение ран','Сезонная миграция в Антарктиду','Спят под водой'], a:0, info:'Многие виды используют эхолокацию.'}
+  ],
+  hard: [
+    {q: 'Почему у бенгальского тигра есть полосы? Какова их функция?', opts:['Маскировка в растительности','Для привлечения партнёров','Чтобы плавать быстрее','Для хранения жира'], a:0, info:'Полосы помогают с маскировкой в высокой траве.'},
+    {q: 'Какая связь между семью видами муравьедов и их языком?', opts:['У муравьедов длинный липкий язык для поедания муравьёв','У муравьедов ядовитый язык','Язык короткий и толстый','Муравьеды питаются листьями'], a:0, info:'Длинный липкий язык помогает добывать муравьёв.'},
+    {q: 'Какую экологическую роль часто выполняют крупные травоядные (например тапиры) в джунглях?', opts:['Распространение семян','Производство кислорода','Почвенная эрозия','Очистка рек'], a:0, info:'Крупные травоядные распространяют семена через фекалии.'},
+    {q: 'Почему некоторые джунглевые птицы имеют яркие оперения, несмотря на риск хищников?', opts:['Чтобы привлечь партнёра','Чтобы быть незаметными','Чтоб не летать','Чтобы переносить семена'], a:0, info:'Яркое оперение часто связано с брачным отбором.'},
+    {q: 'Какой из факторов наиболее угрожает биоразнообразию джунглей?', opts:['Вырубка леса и утрата среды','Избыток дождей','Естественные хищники','Наличие фруктов'], a:0, info:'Вырубка и потеря среды имеют долгосрочный ущерб.'}
+  ]
+};
+
+const POINTS = {easy:10, medium:20, hard:30};
+let teams = []; // {name, score}
+let teamCount = 2;
+let currentTeamIndex = 0;
+let totalQuestions = QUESTIONS.easy.length + QUESTIONS.medium.length + QUESTIONS.hard.length;
+let askedCount = 0;
+let pool = {easy:[], medium:[], hard:[]};
+
+// DOM
+const teamCountInput = document.getElementById('teamCount');
+const teamInput = document.getElementById('teamInput');
+const addTeamBtn = document.getElementById('addTeamBtn');
+const teamListDiv = document.getElementById('teamList');
+const startBtn = document.getElementById('startBtn');
+const resetBtn = document.getElementById('resetBtn');
+const scoreboardDiv = document.getElementById('scoreboard');
+const turnIndicator = document.getElementById('turnIndicator');
+const currentTeamEl = document.getElementById('currentTeam');
+const remainingEl = document.getElementById('remaining');
+const questionText = document.getElementById('questionText');
+const answersDiv = document.getElementById('answers');
+const feedbackDiv = document.getElementById('feedback');
+const levelPill = document.getElementById('levelPill');
+const pickEasy = document.getElementById('pickEasy');
+const pickMedium = document.getElementById('pickMedium');
+const pickHard = document.getElementById('pickHard');
+const skipBtn = document.getElementById('skipBtn');
+const nextBtn = document.getElementById('nextBtn');
+const progressEl = document.getElementById('progress');
+const metaEl = document.getElementById('meta');
+const confettiRoot = document.getElementById('confettiRoot');
+
+// util
+function shuffle(arr){for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]];}}
+function escapeHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');}
+
+function resetPool(){pool.easy = QUESTIONS.easy.map((q,i)=>Object.assign({},q,{id:i}));pool.medium = QUESTIONS.medium.map((q,i)=>Object.assign({},q,{id:i}));pool.hard = QUESTIONS.hard.map((q,i)=>Object.assign({},q,{id:i}));shuffle(pool.easy);shuffle(pool.medium);shuffle(pool.hard);} 
+
+// Инициализация UI
+function renderTeamChips(){teamListDiv.innerHTML='';teams.forEach((t,idx)=>{const el=document.createElement('div');el.className='team-chip';el.textContent=`${idx+1}. ${t.name}`;teamListDiv.appendChild(el);});renderScoreboard();}
+function renderScoreboard(){scoreboardDiv.innerHTML='';teams.forEach((t,idx)=>{const row=document.createElement('div');row.className='score-row';row.innerHTML=`<div class="score-name">${idx+1}. ${escapeHtml(t.name)}</div><div class="score-bubble" id="score-${idx}">${t.score}</div>`;scoreboardDiv.appendChild(row);});}
+
+addTeamBtn.addEventListener('click', ()=>{const name = teamInput.value.trim(); if(!name) return flash(teamInput); if(teams.length >= Number(teamCountInput.value)) return alert('Достигнуто максимальное число команд'); teams.push({name,score:0}); teamInput.value=''; renderTeamChips();});
+teamInput.addEventListener('keydown',(e)=>{if(e.key==='Enter') addTeamBtn.click();});
+teamCountInput.addEventListener('change',()=>{const val=Number(teamCountInput.value); if(val<2) teamCountInput.value=2; if(val>4) teamCountInput.value=4; if(teams.length>val) teams=teams.slice(0,val); renderTeamChips();});
+
+startBtn.addEventListener('click', ()=>{
+  teamCount = Number(teamCountInput.value) || 2;
+  // Если команд меньше, чем указано — автозаполнить неймами
+  while(teams.length < teamCount){ teams.push({name:'Команда '+(teams.length+1), score:0}); }
+  // Если команд вообще нет (пользователь ничего не вводил) — добавить 2 команды по умолчанию
+  if(teams.length === 0){ teams = [{name:'Команда 1',score:0},{name:'Команда 2',score:0}]; }
+  // Готовим игру
+  resetPool(); teams.forEach(t=>t.score=0); currentTeamIndex=0; askedCount=0; updateUIForNewGame(); pickTurn();
+});
+
+resetBtn.addEventListener('click', ()=>{ if(!confirm('Сбросить игру и имена команд?')) return; teams=[]; renderTeamChips(); resetPool(); askedCount=0; updateMeta(); questionText.textContent='Нажмите «Начать игру», чтобы начать.'; turnIndicator.textContent='Ожидание старта';});
+
+function updateUIForNewGame(){ renderScoreboard(); remainingEl.textContent=totalQuestions; progressEl.textContent=`Вопрос 0 из ${totalQuestions}`; feedbackDiv.textContent=''; questionText.textContent=`Команды готовы — ${teams[0].name} выбирает уровень.`; currentTeamEl.textContent = teams[currentTeamIndex].name; turnIndicator.textContent = 'Игра начата'; metaEl.textContent = `${teams.length} команд • ${totalQuestions} вопросов`; nextBtn.disabled = true; skipBtn.disabled = true; }
+
+function pickTurn(){ currentTeamEl.textContent = teams[currentTeamIndex].name; feedbackDiv.textContent=''; levelPill.textContent='Выберите уровень'; levelPill.className='q-level'; [pickEasy,pickMedium,pickHard].forEach(b=>b.disabled=false); answersDiv.innerHTML=''; questionText.textContent = `${teams[currentTeamIndex].name}, выберите уровень риска.`; }
+
+[pickEasy,pickMedium,pickHard].forEach(btn=>btn.addEventListener('click', ()=>{ if(btn.disabled) return; const risk = btn.dataset.risk; askQuestion(risk); }));
+
+function askQuestion(risk){ if(!pool[risk] || pool[risk].length===0){ alert('Вопросы этого уровня закончились. Выберите другой уровень.'); return; } const q = pool[risk].pop(); levelPill.textContent = risk==='easy'?'Лёгкий':risk==='medium'?'Средний':'Сложный'; levelPill.className = 'q-level '+(risk==='easy'?'easy':risk==='medium'?'medium':'hard'); questionText.textContent = q.q; answersDiv.innerHTML=''; q.opts.forEach((opt,idx)=>{ const b=document.createElement('button'); b.className='answer-btn smooth'; b.innerHTML = `<span style="font-weight:900">${String.fromCharCode(65+idx)}.</span>&nbsp;<span>${escapeHtml(opt)}</span>`; b.dataset.idx=idx; b.addEventListener('click', ()=>selectAnswer(b,q,risk)); answersDiv.appendChild(b); }); [pickEasy,pickMedium,pickHard].forEach(b=>b.disabled=true); nextBtn.disabled=true; skipBtn.disabled=false; window._current={q,risk}; }
+
+function selectAnswer(btn,q,risk){ // блокируем кнопки
+  Array.from(answersDiv.querySelectorAll('button')).forEach(b=>b.classList.add('disabled'));
+  const chosen = Number(btn.dataset.idx); const correct = q.a;
+  if(chosen === correct){ feedbackDiv.textContent = `Правильно! +${POINTS[risk]} очков`; feedbackDiv.className='feedback good'; teams[currentTeamIndex].score += POINTS[risk]; renderScoreboard(); burstConfetti(); }
+  else { feedbackDiv.textContent = `Неправильно. Правильный ответ: ${q.opts[correct]}`; feedbackDiv.className='feedback bad'; }
+  // показать подсказку
+  const info = document.createElement('div'); info.className='muted'; info.style.marginTop='8px'; info.textContent = q.info || ''; answersDiv.parentNode.appendChild(info);
+  askedCount++; remainingEl.textContent = totalQuestions - askedCount; progressEl.textContent = `Вопрос ${askedCount} из ${totalQuestions}`; nextBtn.disabled=false; skipBtn.disabled=true; window._current=null;
+}
+
+skipBtn.addEventListener('click', ()=>{ if(!window._current) return; askedCount++; remainingEl.textContent = totalQuestions - askedCount; progressEl.textContent = `Вопрос ${askedCount} из ${totalQuestions}`; feedbackDiv.textContent = `${teams[currentTeamIndex].name} пропускает — очки не начисляются.`; feedbackDiv.className='feedback bad'; answersDiv.innerHTML=''; window._current=null; nextBtn.disabled=false; skipBtn.disabled=true; });
+
+nextBtn.addEventListener('click', ()=>{ if(askedCount >= totalQuestions){ finishGame(); return; } currentTeamIndex = (currentTeamIndex + 1) % teams.length; pickTurn(); });
+
+function finishGame(){ const sorted = teams.slice().sort((a,b)=>b.score-a.score); const winner = sorted[0]; turnIndicator.textContent = 'Игра окончена!'; questionText.textContent = `Победитель: ${winner.name} — ${winner.score} очков.`; answersDiv.innerHTML=''; feedbackDiv.textContent=''; const msg=document.createElement('div'); msg.innerHTML = `<div style="font-weight:900;margin-top:8px">Результаты</div><div class='muted' style='margin-top:8px'>${teams.map(t=>escapeHtml(t.name)+': '+t.score+' очк.').join('<br>')}</div>`; answersDiv.appendChild(msg); nextBtn.disabled=true; skipBtn.disabled=true; }
+
+function updateMeta(){ metaEl.textContent = `${teams.length} команд • ${totalQuestions} вопросов`; }
+
+function flash(el){ el.style.boxShadow='0 0 0 4px rgba(255,215,100,0.35)'; setTimeout(()=>el.style.boxShadow='',350); }
+
+/* ========== Конфетти — простой эффект ========== */
+function burstConfetti(){ const count = 22; for(let i=0;i<count;i++){ const p = document.createElement('div'); p.className='confetti-piece'; const w = 6 + Math.random()*8; p.style.width = w+'px'; p.style.height = (8+Math.random()*12)+'px'; p.style.left = (50 + (Math.random()-0.5)*30) + '%'; p.style.top = '20%'; p.style.background = ['#FFD166','#FF6B6B','#4DD599','#00A86B'][Math.floor(Math.random()*4)]; p.style.transform = `translateY(0) rotate(${Math.random()*360}deg)`; p.style.opacity=1; p.style.position='absolute'; confettiRoot.appendChild(p);
+  // animate
+  const dx = (Math.random()-0.5)*800; const dy = 600 + Math.random()*200; p.animate([{transform:`translate(0,0) rotate(0deg)`, opacity:1},{transform:`translate(${dx}px, ${dy}px) rotate(${Math.random()*720}deg)`, opacity:0}],{duration:1200+Math.random()*800,easing:'cubic-bezier(.2,.7,.1,1)'});
+  setTimeout(()=>p.remove(),2000);
+}
+// лёгкий лог для радости
+const logo = document.querySelector('.logo'); logo.animate([{transform:'scale(1)'},{transform:'scale(1.06)'},{transform:'scale(1)'}],{duration:700,iterations:1}); }
+
+// клавиши 1-4 для ответов
+document.addEventListener('keydown', (e)=>{ if(!window._current) return; const idx = Number(e.key)-1; if(!Number.isNaN(idx)){ const buttons = Array.from(answersDiv.querySelectorAll('button')); if(buttons[idx]) buttons[idx].click(); } });
+
+// Стартовое состояние
+resetPool(); updateMeta(); renderTeamChips(); questionText.textContent='Нажмите «Начать игру», чтобы начать.'; turnIndicator.textContent='Ожидание старта'; nextBtn.disabled=true; skipBtn.disabled=true;
+
+</script>
+</body>
+</html>
